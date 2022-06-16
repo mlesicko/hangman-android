@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+    <PreferenceCategory
+        app:key="you_guess_category"
+        app:title="You Guess">
+        <ListPreference
+            app:key="wordlist"
+            app:title="Word difficulty"
+            app:entries="@array/word_lists"
+            app:entryValues="@array/word_lists_values"
+            app:defaultValue="easy"
+            app:useSimpleSummaryProvider="true"/>
+    </PreferenceCategory>
+    <PreferenceCategory
+        app:key="computer_guesses_category"
+        app:title="Computer Guesses/Solver">
+        <ListPreference
+            app:key="algorithm"
+            app:title="Algorithm"
+            app:entries="@array/algorithms"
+            app:entryValues="@array/algorithms_values"
+            app:defaultValue="good"
+            app:useSimpleSummaryProvider="true"/>
+    </PreferenceCategory>
+</PreferenceScreen>

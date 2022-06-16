@@ -6,6 +6,7 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
+import com.sososoftware.hangman.settings.SettingsActivity
 
 
 class MainActivity : AppCompatActivity() {
@@ -21,10 +22,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.menu_item_open_source_licenses) {
-            startActivity(Intent(this, OssLicensesMenuActivity::class.java))
-            return true
+        return when (item.itemId) {
+            R.id.menu_item_settings -> {
+                startActivity(Intent(this, SettingsActivity::class.java))
+                true
+            }
+            R.id.menu_item_open_source_licenses -> {
+                startActivity(Intent(this, OssLicensesMenuActivity::class.java))
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
-        return super.onOptionsItemSelected(item)
     }
 }

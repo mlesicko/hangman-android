@@ -16,12 +16,20 @@
         <action
             android:id="@+id/action_titleFragment_to_hangmanPlayerFragment"
             app:destination="@id/hangmanPlayerFragment" />
+        <action
+            android:id="@+id/action_titleFragment_to_hangmanSolverFragment"
+            app:destination="@id/hangmanSolverFragment" />
     </fragment>
     <fragment
         android:id="@+id/hangmanGamemasterFragment"
         android:name="com.sososoftware.hangman.gamemaster.GamemasterFragment"
         android:label="fragment_hangman_gamemaster"
         tools:layout="@layout/fragment_hangman_gamemaster" />
+    <fragment
+        android:id="@+id/hangmanSolverFragment"
+        android:name="com.sososoftware.hangman.solver.SolverFragment"
+        android:label="fragment_hangman_solver"
+        tools:layout="@layout/fragment_hangman_solver" />
     <fragment
         android:id="@+id/hangmanPlayerFragment"
         android:name="com.sososoftware.hangman.player.PlayerFragment"

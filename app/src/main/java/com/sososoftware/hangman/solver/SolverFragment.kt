@@ -1,7 +1,8 @@
-package com.sososoftware.hangman.gamemaster
-import android.content.SharedPreferences
-import android.os.Bundle
+package com.sososoftware.hangman.solver
 
+import android.content.SharedPreferences
+import android.graphics.Color
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,7 +15,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
 import com.sososoftware.hangman.R
-import com.sososoftware.hangman.databinding.FragmentHangmanGamemasterBinding
+import com.sososoftware.hangman.databinding.FragmentHangmanSolverBinding
 import com.sososoftware.hangman.getAllWords
 import com.sososoftware.hangman.guess.Guess
 import com.sososoftware.hangman.settings.getAlgorithm
@@ -23,12 +24,12 @@ import kotlinx.coroutines.launch
 
 /**
  * A simple [Fragment] subclass.
- * Use the [GamemasterFragment.newInstance] factory method to
+ * Use the [SolverFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
-class GamemasterFragment : Fragment() {
-    private lateinit var binding: FragmentHangmanGamemasterBinding
-    private lateinit var viewModel: GamemasterViewModel
+class SolverFragment : Fragment() {
+    private lateinit var binding: FragmentHangmanSolverBinding
+    private lateinit var viewModel: SolverViewModel
     private lateinit var sharedPreferences: SharedPreferences
 
     private val onSharedPreferenceChangeListener =
@@ -45,7 +46,7 @@ class GamemasterFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = DataBindingUtil.inflate(inflater,
-            R.layout.fragment_hangman_gamemaster,container,false)
+            R.layout.fragment_hangman_solver,container,false)
         binding.resetButton.setOnClickListener { viewModel.resetGame() }
         ArrayAdapter.createFromResource(
             requireContext(),
@@ -72,13 +73,13 @@ class GamemasterFragment : Fragment() {
             binding.spinnerWordLength.setSelection(DEFAULT_PROMPT_LENGTH - 1)
         }
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
-        val algorithm = sharedPreferences.getAlgorithm()
-        val viewModelFactory = GamemasterViewModelFactory(
+        val algorithm = sharedPreferences.getString("algorithm", "good") ?: "good"
+        val viewModelFactory = SolverViewModelFactory(
             DEFAULT_PROMPT_LENGTH,
             algorithm
         )
         viewModel = ViewModelProvider(this, viewModelFactory)
-            .get(GamemasterViewModel::class.java)
+            .get(SolverViewModel::class.java)
         viewModel.state.observe(viewLifecycleOwner) { updateDisplay(it) }
         sharedPreferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
         getWords()
@@ -98,30 +99,20 @@ class GamemasterFragment : Fragment() {
         }
     }
 
-    private fun onLetterSelected(state: GamemasterState, currentLetterGuess: Char?, index: Int) {
-        val currentValue = state.prompt[index]
-        val updateValue = when {
-            currentLetterGuess == null -> currentValue
-            currentValue != null && currentValue != currentLetterGuess -> currentValue
-            currentValue == currentLetterGuess -> null
-            else -> currentLetterGuess
+    private fun onLetterSelected(state: SolverState, newLetter: Char?, index: Int) {
+        val newPrompt = state.prompt.mapIndexed {
+                promptIndex, oldLetter -> if (promptIndex == index) newLetter else oldLetter
         }
-
-        if (updateValue != currentValue) {
-            val newPrompt = state.prompt.mapIndexed { promptIndex, oldLetter ->
-                if (promptIndex == index) updateValue else oldLetter
-            }
-            viewModel.onPromptChange(newPrompt)
-        }
+        viewModel.onPromptChange(newPrompt)
     }
 
-    private fun updateDisplay(state: GamemasterState) {
+    private fun updateDisplay(state: SolverState) {
         updateGuess(state)
         buildPrompt(state)
-        updateGallows(state)
+        buildLetters(state)
     }
 
-    private fun updateGuess(state: GamemasterState) {
+    private fun updateGuess(state: SolverState) {
         binding.guessText.text = state.guess?.let { guess ->
             when (guess.type) {
                 Guess.GuessType.LETTER_GUESS -> "I guess the letter \"${guess.letter}\"."
@@ -130,64 +121,54 @@ class GamemasterFragment : Fragment() {
                 Guess.GuessType.THINKING -> "Thinking..."
             }
         } ?: ""
-        state.guess?.letter?.let {
-            binding.finishGuessButton.isEnabled = true
-            binding.finishGuessButton.setOnClickListener {
-                state.guess?.letter?.let { letter -> viewModel.onGuess(letter) }
-            }
-            binding.finishGuessButton.visibility = View.VISIBLE
-            if (it in state.prompt) {
-                binding.finishGuessButton.setBackgroundResource(R.color.letterBackgroundCorrectGuess)
-                binding.finishGuessButton.setText(R.string.done)
-            } else {
-                binding.finishGuessButton.setBackgroundResource(R.color.letterBackgroundIncorrectGuess)
-                binding.finishGuessButton.setText(R.string.not_in_word)
-
-            }
-        } ?: run {
-            binding.finishGuessButton.isEnabled = false
-            binding.finishGuessButton.setOnClickListener {  }
-            binding.finishGuessButton.visibility = View.INVISIBLE
+        binding.rejectGuessButton.isEnabled = state.guess?.letter != null
+        binding.rejectGuessButton.setOnClickListener {
+            state.guess?.letter?.let { viewModel.onGuess(it) }
         }
     }
 
-    private fun buildPrompt(state: GamemasterState) {
+    private fun buildPrompt(state: SolverState) {
         binding.promptHolder.removeAllViews()
         state.prompt.forEachIndexed{ index, promptLetter ->
             val promptLetterView = layoutInflater.inflate(R.layout.view_prompt_letter, null) as TextView
             promptLetterView.text = promptLetter?.toString() ?: "_"
             promptLetterView.setOnClickListener {
-                state.guess?.let {
-                    if (it.type == Guess.GuessType.LETTER_GUESS) {
-                        onLetterSelected(state, it.letter, index)
-                    }
+                val dialog = LetterListDialogFragment.newInstance()
+                dialog.callback = { letter ->
+                    onLetterSelected(state, letter, index)
                 }
+                dialog.show(parentFragmentManager, "letterPickerDialog")
             }
             binding.promptHolder.addView(promptLetterView)
         }
     }
 
-    private fun updateGallows(state: GamemasterState) {
-        binding.gallows.setImageResource(when(state.wrongLetterCount) {
-            0 -> R.drawable.gallows_0
-            1 -> R.drawable.gallows_1
-            2 -> R.drawable.gallows_2
-            3 -> R.drawable.gallows_3
-            4 -> R.drawable.gallows_4
-            5 -> R.drawable.gallows_5
-            6 -> R.drawable.gallows_6
-            else -> R.drawable.gallows_7
-        })
-        binding.gallows.contentDescription = when(state.wrongLetterCount) {
-            0 -> getString(R.string.zero_wrong_guesses)
-            1 -> getString(R.string.one_wrong_guess)
-            2 -> getString(R.string.two_wrong_guesses)
-            3 -> getString(R.string.three_wrong_guesses)
-            4 -> getString(R.string.four_wrong_guesses)
-            5 -> getString(R.string.five_wrong_guesses)
-            6 -> getString(R.string.six_wrong_guesses)
-            else -> getString(R.string.seven_wrong_guesses)
+    private fun buildLetters(state: SolverState) {
+        val letters = 'A'..'Z'
+        binding.letterHolder.removeAllViews()
+        letters.forEach { c ->
+            binding.letterHolder.addView(buildLetterView(state, c))
         }
+    }
+
+    private fun buildLetterView(state: SolverState, c: Char): View {
+        val letterView = layoutInflater.inflate(R.layout.view_letter, null) as TextView
+        letterView.text = c.toString()
+        if (c !in state.guessedLetters){
+            letterView.setTextColor(Color.parseColor("black"))
+            letterView.setBackgroundResource(R.drawable.letter_unguessed_background)
+            letterView.setOnClickListener { viewModel.onGuess(c) }
+        } else {
+            letterView.setTextColor(Color.parseColor("white"))
+            letterView.setBackgroundResource(
+                if (c in state.prompt)
+                    R.drawable.letter_correct_guess_background
+                else
+                    R.drawable.letter_incorrect_guess_background
+            )
+            letterView.setOnClickListener { viewModel.onLetterUnselected(c) }
+        }
+        return letterView
     }
 
     companion object {
@@ -198,7 +179,7 @@ class GamemasterFragment : Fragment() {
          * @return A new instance of fragment HangmanPlayerFragment.
          */
         @JvmStatic
-        fun newInstance() = GamemasterFragment()
+        fun newInstance() = SolverFragment()
         private const val DEFAULT_PROMPT_LENGTH = 6
     }
 }

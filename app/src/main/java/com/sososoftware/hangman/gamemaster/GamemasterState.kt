@@ -1,5 +1,7 @@
 package com.sososoftware.hangman.gamemaster
 
+import com.sososoftware.hangman.guess.Guess
+
 data class GamemasterState (
     var prompt: List<Char?>,
     var guessedLetters: Set<Char> = emptySet(),
@@ -12,17 +14,16 @@ data class GamemasterState (
     fun updatePrompt(newPrompt: List<Char?>) =
         GamemasterState(
             newPrompt,
-            guessedLetters + newPrompt.filterNotNull(),
-            Guess.thinking()
+            guessedLetters,
+            guess
         )
 
     fun addGuessedLetter(letter: Char) =
         GamemasterState(prompt, guessedLetters + letter, Guess.thinking())
 
-    fun removeGuessedLetter(letter: Char): GamemasterState =
-        if (letter !in prompt) {
-            GamemasterState(prompt, guessedLetters - letter, Guess.thinking())
-        } else {
-            this
-        }
+    val wrongLetterCount
+        get() = guessedLetters.filter { it !in prompt }.size
+
+    val dead
+        get() = wrongLetterCount > 6
 }

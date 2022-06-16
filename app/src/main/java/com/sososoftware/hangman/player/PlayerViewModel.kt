@@ -3,7 +3,7 @@ package com.sososoftware.hangman.player
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
-class PlayerViewModel(private val words: List<String>): ViewModel() {
+class PlayerViewModel(private var words: Collection<String>): ViewModel() {
 
     val state = MutableLiveData<PlayerState>()
 
@@ -19,5 +19,10 @@ class PlayerViewModel(private val words: List<String>): ViewModel() {
         state.value = state.value?.guessLetter(letter)
     }
 
-    private fun getWord(): String = words[(0..words.size).random()]
+    fun updateWords(newWords: Collection<String>) {
+        words = newWords
+        resetGame()
+    }
+
+    private fun getWord(): String = words.random()
 }

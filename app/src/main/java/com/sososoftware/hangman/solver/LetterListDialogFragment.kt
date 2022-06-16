@@ -1,4 +1,4 @@
-package com.sososoftware.hangman.gamemaster
+package com.sososoftware.hangman.solver
 
 import android.os.Bundle
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -17,7 +17,7 @@ class LetterListDialogFragment : BottomSheetDialogFragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = DataBindingUtil.inflate(inflater,
             R.layout.fragment_letter_list_dialog,container,false)
         buildLetters()

@@ -32,7 +32,8 @@
             app:flChildSpacing="auto"
             app:flMinChildSpacing="10dp"
             app:flRowSpacing="10dp"
-            app:flChildSpacingForLastRow="align"/>
+            app:flChildSpacingForLastRow="align"
+            tools:listitem="@layout/view_letter"/>
 
         <ImageButton
             android:id="@+id/reset_button"
@@ -44,6 +45,7 @@
             android:padding="5dp"
             android:scaleType="fitXY"
             android:src="@android:drawable/ic_popup_sync"
+            android:contentDescription="@string/reset"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -52,6 +54,7 @@
             android:layout_width="250dp"
             android:layout_height="250dp"
             android:src="@drawable/gallows_0"
+            android:contentDescription="@string/zero_wrong_guesses"
             style="@style/Gallows"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

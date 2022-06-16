@@ -1,11 +1,10 @@
 <resources>
     <string name="app_name">Hangman</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title">Hangman</string>
     <string name="number_of_letters">Number of letters:</string>
     <string name="not_in_word">Not in Word</string>
     <string name="open_source_licenses">Open Source Licenses</string>
+    <string name="done">Done</string>
     <string-array name="word_length">
         <item>1</item>
         <item>2</item>
@@ -24,4 +23,35 @@
         <item>15</item>
         <item>16</item>
     </string-array>
+    <string-array name="word_lists">
+        <item>Easy</item>
+        <item>Hard</item>
+        <item>Both</item>
+    </string-array>
+    <string-array name="word_lists_values">
+        <item>easy</item>
+        <item>hard</item>
+        <item>both</item>
+    </string-array>
+    <string-array name="algorithms">
+        <item>Best</item>
+        <item>Interesting</item>
+    </string-array>
+    <string-array name="algorithms_values">
+        <item>good</item>
+        <item>clever</item>
+    </string-array>
+    <string name="title_activity_settings">Settings</string>
+    <string name="you_guess">You Guess</string>
+    <string name="computer_guesses">Computer Guesses</string>
+    <string name="solver">Solver</string>
+    <string name="reset">Reset</string>
+    <string name="zero_wrong_guesses">Zero wrong guesses.</string>
+    <string name="one_wrong_guess">One wrong guess.</string>
+    <string name="two_wrong_guesses">Two wrong guesses.</string>
+    <string name="three_wrong_guesses">Three wrong guesses.</string>
+    <string name="four_wrong_guesses">Four wrong guesses.</string>
+    <string name="five_wrong_guesses">Five wrong guesses.</string>
+    <string name="six_wrong_guesses">Six wrong guesses.</string>
+    <string name="seven_wrong_guesses">Seven wrong guesses. Game over.</string>
 </resources>

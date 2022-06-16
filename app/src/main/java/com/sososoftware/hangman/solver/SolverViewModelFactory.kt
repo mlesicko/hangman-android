@@ -1,16 +1,16 @@
-package com.sososoftware.hangman.gamemaster
+package com.sososoftware.hangman.solver
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 
-class GamemasterViewModelFactory(
+class SolverViewModelFactory(
     private val initialPromptLength: Int,
     private val algorithm: String
 ): ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(GamemasterViewModel::class.java)) {
+        if (modelClass.isAssignableFrom(SolverViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return GamemasterViewModel(initialPromptLength, algorithm) as T
+            return SolverViewModel(initialPromptLength, algorithm) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

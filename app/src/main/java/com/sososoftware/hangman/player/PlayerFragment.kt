@@ -1,5 +1,6 @@
 package com.sososoftware.hangman.player
 
+import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -8,11 +9,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
-import com.sososoftware.hangman.R
+import androidx.lifecycle.ViewModelProvider
+import androidx.preference.PreferenceManager
+import com.sososoftware.hangman.*
 import com.sososoftware.hangman.databinding.FragmentHangmanPlayerBinding
-import com.sososoftware.hangman.getPlayerWords
+import com.sososoftware.hangman.settings.getWordlist
 
 /**
  * A simple [Fragment] subclass.
@@ -20,23 +21,46 @@ import com.sososoftware.hangman.getPlayerWords
  * create an instance of this fragment.
  */
 class PlayerFragment : Fragment() {
-    lateinit var binding: FragmentHangmanPlayerBinding
-    lateinit var viewModel: PlayerViewModel
+    private lateinit var binding: FragmentHangmanPlayerBinding
+    private lateinit var viewModel: PlayerViewModel
+    private lateinit var sharedPreferences: SharedPreferences
+
+    private val onSharedPreferenceChangeListener =
+        SharedPreferences.OnSharedPreferenceChangeListener(
+            fun(preferences: SharedPreferences, key: String) {
+                if (key == "wordlist") {
+                    viewModel.updateWords(getWords(preferences.getWordlist()))
+                }
+            }
+        )
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = DataBindingUtil.inflate(inflater,
             R.layout.fragment_hangman_player,container,false)
         binding.resetButton.setOnClickListener { viewModel.resetGame() }
-        // TODO: Add support for getting difficult words instead
-        // TODO: Add support for getting only words of specified length
-        val viewModelFactory = PlayerViewModelFactory(getPlayerWords(resources))
-        viewModel = ViewModelProviders.of(this, viewModelFactory)
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
+        val wordlist = sharedPreferences.getWordlist()
+        val viewModelFactory = PlayerViewModelFactory(getWords(wordlist))
+        viewModel = ViewModelProvider(this, viewModelFactory)
             .get(PlayerViewModel::class.java)
-        viewModel.state.observe(viewLifecycleOwner, Observer { updateDisplay(it) })
+        viewModel.state.observe(viewLifecycleOwner) { updateDisplay(it) }
+        sharedPreferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
         return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        sharedPreferences.unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
+    }
+
+    private fun getWords(wordlist: String): Collection<String> = when (wordlist) {
+        "easy" -> getEasyPlayerWords(resources)
+        "hard" -> getHardPlayerWords(resources)
+        "both" -> getBothPlayerWords(resources)
+        else -> listOf()
     }
 
     private fun updateDisplay(state: PlayerState) {
@@ -47,7 +71,7 @@ class PlayerFragment : Fragment() {
 
     private fun updatePrompt(state: PlayerState) {
         binding.wordHolder.text = state.wordToGuess.toCharArray().joinToString(" ") {
-            if (it in state.guessedLetters) it.toString() else "_"
+            if (state.wasGuessed(it)) it.toString() else "_"
         }
     }
 
@@ -62,25 +86,24 @@ class PlayerFragment : Fragment() {
     private fun buildLetterView(state: PlayerState, c: Char): View {
         val letterView = layoutInflater.inflate(R.layout.view_letter, null) as TextView
         letterView.text = c.toString()
-        if (c !in state.guessedLetters){
-            letterView.setTextColor(Color.parseColor("black"))
-            letterView.setBackgroundResource(R.drawable.letter_unguessed_background)
-            letterView.setOnClickListener { viewModel.onGuess(c) }
-        } else {
+        if (state.wasGuessed(c)){
             letterView.setTextColor(Color.parseColor("white"))
             letterView.setBackgroundResource(
-                if (c in state.wordToGuess)
+                if (state.inWord(c))
                     R.drawable.letter_correct_guess_background
                 else
                     R.drawable.letter_incorrect_guess_background
             )
+        } else {
+            letterView.setTextColor(Color.parseColor("black"))
+            letterView.setBackgroundResource(R.drawable.letter_unguessed_background)
+            letterView.setOnClickListener { viewModel.onGuess(c) }
         }
         return letterView
     }
 
     private fun updateGallows(state: PlayerState) {
-        val wrongLetterCount = state.guessedLetters.filter { it !in state.wordToGuess }.size
-        binding.gallows.setImageResource(when(wrongLetterCount) {
+        binding.gallows.setImageResource(when(state.wrongGuessCount) {
             0 -> R.drawable.gallows_0
             1 -> R.drawable.gallows_1
             2 -> R.drawable.gallows_2
@@ -90,6 +113,16 @@ class PlayerFragment : Fragment() {
             6 -> R.drawable.gallows_6
             else -> R.drawable.gallows_7
         })
+        binding.gallows.contentDescription = when(state.wrongGuessCount) {
+            0 -> getString(R.string.zero_wrong_guesses)
+            1 -> getString(R.string.one_wrong_guess)
+            2 -> getString(R.string.two_wrong_guesses)
+            3 -> getString(R.string.three_wrong_guesses)
+            4 -> getString(R.string.four_wrong_guesses)
+            5 -> getString(R.string.five_wrong_guesses)
+            6 -> getString(R.string.six_wrong_guesses)
+            else -> getString(R.string.seven_wrong_guesses)
+        }
     }
 
     companion object {

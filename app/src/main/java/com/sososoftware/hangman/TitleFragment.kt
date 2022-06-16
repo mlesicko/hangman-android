@@ -18,7 +18,7 @@ class TitleFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         val binding = DataBindingUtil.inflate<FragmentTitleBinding>(inflater,
             R.layout.fragment_title,container,false)
         binding.hangmanPlayerButton.setOnClickListener { view: View ->
@@ -26,6 +26,9 @@ class TitleFragment : Fragment() {
         }
         binding.hangmanGamemasterButton.setOnClickListener { view: View ->
             view.findNavController().navigate(R.id.action_titleFragment_to_hangmanGamemasterFragment)
+        }
+        binding.hangmanSolverButton.setOnClickListener { view: View ->
+            view.findNavController().navigate(R.id.action_titleFragment_to_hangmanSolverFragment)
         }
         return binding.root
     }
