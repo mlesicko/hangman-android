@@ -14,7 +14,7 @@ import com.sososoftware.hangman.databinding.FragmentLetterListDialogBinding
 class LetterListDialogFragment : BottomSheetDialogFragment() {
     lateinit var binding: FragmentLetterListDialogBinding
     var callback: (letter: Char?) -> Unit = { }
-    var selectedLetter: Char? = null
+    private var selectedLetter: Char? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

@@ -4,14 +4,11 @@ import android.app.Application
 import android.content.SharedPreferences
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.preference.PreferenceManager
-import com.sososoftware.hangman.getAllWords
 import com.sososoftware.hangman.getBothPlayerWords
 import com.sososoftware.hangman.getEasyPlayerWords
 import com.sososoftware.hangman.getHardPlayerWords
-import com.sososoftware.hangman.settings.getAlgorithm
 import com.sososoftware.hangman.settings.getWordlist
 import kotlinx.coroutines.launch
 

@@ -13,7 +13,6 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.sososoftware.hangman.*
 import com.sososoftware.hangman.databinding.FragmentHangmanPlayerBinding
-import com.sososoftware.hangman.settings.getWordlist
 
 /**
  * A simple [Fragment] subclass.
@@ -84,33 +83,6 @@ class PlayerFragment : Fragment() {
         binding.wordHolder.text = state.wordToGuess.toCharArray().joinToString(" ") {
             if (state.wasGuessed(it)) it.toString() else "_"
         }
-    }
-
-    private fun buildLetters(state: PlayerState) {
-        val letters = 'A'..'Z'
-        binding.letterHolder.removeAllViews()
-        letters.forEach { c ->
-            binding.letterHolder.addView(buildLetterView(state, c))
-        }
-    }
-
-    private fun buildLetterView(state: PlayerState, c: Char): View {
-        val letterView = layoutInflater.inflate(R.layout.view_letter, null) as TextView
-        letterView.text = c.toString()
-        if (state.wasGuessed(c)){
-            letterView.setTextColor(Color.parseColor("white"))
-            letterView.setBackgroundResource(
-                if (state.inWord(c))
-                    R.drawable.letter_correct_guess_background
-                else
-                    R.drawable.letter_incorrect_guess_background
-            )
-        } else {
-            letterView.setTextColor(Color.parseColor("black"))
-            letterView.setBackgroundResource(R.drawable.letter_unguessed_background)
-            letterView.setOnClickListener { viewModel.onGuess(c) }
-        }
-        return letterView
     }
 
     private fun updateGallows(state: PlayerState) {

@@ -13,7 +13,7 @@ data class Guess(val letter: Char?, val word: String?, val type: GuessType) {
 
     companion object {
         fun thinking() = Guess(null, null, GuessType.THINKING)
-        fun giveUp() = Guess(null, null, GuessType.GIVE_UP)
+        private fun giveUp() = Guess(null, null, GuessType.GIVE_UP)
         private fun guessLetter(letter: Char) = Guess(letter, null, GuessType.LETTER_GUESS)
         private fun guessWord(word: String) = Guess(null, word, GuessType.WORD_GUESS)
 
