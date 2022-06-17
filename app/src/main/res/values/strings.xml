@@ -54,4 +54,5 @@
     <string name="five_wrong_guesses">Five wrong guesses.</string>
     <string name="six_wrong_guesses">Six wrong guesses.</string>
     <string name="seven_wrong_guesses">Seven wrong guesses. Game over.</string>
+    <string name="update_guess">Update Guess</string>
 </resources>

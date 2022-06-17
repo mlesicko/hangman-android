@@ -1,34 +1,57 @@
 package com.sososoftware.hangman.gamemaster
 
+import android.app.Application
+import android.content.SharedPreferences
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.preference.PreferenceManager
+import com.sososoftware.hangman.getAllWords
 import com.sososoftware.hangman.guess.Guess
+import com.sososoftware.hangman.settings.getAlgorithm
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 class GamemasterViewModel(
-    private val initialPromptLength: Int,
-    private var algorithm: String
-): ViewModel() {
+    application: Application
+): AndroidViewModel(application) {
     val state = MutableLiveData<GamemasterState>()
-    var words: List<String> = emptyList()
+    private var words: List<String> = emptyList()
         set(value) {
             field = value
             wordsMap = words.groupBy { it.length }
             updateGuess()
         }
 
+    private val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(application)
+    private var algorithm = sharedPreferences.getAlgorithm()
     private var updateGuessJob: Job? = null
     private var wordsMap: Map<Int,List<String>> = emptyMap()
 
+
+    private val onSharedPreferenceChangeListener =
+        SharedPreferences.OnSharedPreferenceChangeListener(
+            fun(preferences: SharedPreferences, key: String) {
+                if (key == "algorithm") {
+                    algorithm = preferences.getAlgorithm()
+                    updateGuess()
+                }
+            }
+        )
+
     init {
-        state.value = GamemasterState(initialPromptLength)
-        updateGuess()
+        state.value = GamemasterState(DEFAULT_PROMPT_LENGTH)
+        sharedPreferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
+        getWords()
+    }
+
+    override fun onCleared() {
+        sharedPreferences.unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
+        super.onCleared()
     }
 
     fun resetGame() {
-        val promptLength = state.value?.prompt?.size ?: initialPromptLength
+        val promptLength = state.value?.prompt?.size ?: DEFAULT_PROMPT_LENGTH
         state.value = GamemasterState(promptLength)
         updateGuess()
     }
@@ -49,29 +72,27 @@ class GamemasterViewModel(
         updateGuess()
     }
 
-    fun updateAlgorithm(newAlgorithm: String) {
-        if (newAlgorithm != algorithm) {
-            algorithm = newAlgorithm
-            updateGuess()
-        }
-    }
-
     private fun updateGuess() {
         updateGuessJob?.cancel()
         state.value?.let {
-            if (it.dead) {
-                state.value = it.withGuess(Guess.giveUp())
-            } else {
-                updateGuessJob = viewModelScope.launch {
-                    state.value = it.withGuess(Guess.generateGuess(
-                        wordsMap[it.prompt.size],
-                        it.guessedLetters,
-                        it.prompt,
-                        algorithm
-                    ))
-                }
+            updateGuessJob = viewModelScope.launch {
+                state.value = it.withGuess(Guess.generateGuess(
+                    wordsMap[it.prompt.size],
+                    it.guessedLetters,
+                    it.prompt,
+                    algorithm
+                ))
             }
         }
     }
 
+    private fun getWords() {
+        viewModelScope.launch {
+            words = getAllWords(getApplication<Application>().resources)
+        }
+    }
+
+    companion object {
+        const val DEFAULT_PROMPT_LENGTH = 6
+    }
 }

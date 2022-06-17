@@ -36,7 +36,7 @@
             app:flRowSpacing="10dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/rejectGuessButton" />
+            app:layout_constraintTop_toBottomOf="@+id/updateGuessButton" />
 
         <ImageButton
             android:id="@+id/reset_button"
@@ -61,13 +61,13 @@
             android:textSize="20sp"
             android:textColor="@android:color/black"
             android:textStyle="bold"
-            app:layout_constraintBaseline_toBaselineOf="@+id/rejectGuessButton"
-            app:layout_constraintEnd_toStartOf="@+id/rejectGuessButton"
+            app:layout_constraintBaseline_toBaselineOf="@+id/updateGuessButton"
+            app:layout_constraintEnd_toStartOf="@+id/updateGuessButton"
             app:layout_constraintStart_toStartOf="parent"
             tools:text="I guess the letter &quot;E&quot;."/>
 
         <TextView
-            android:id="@+id/rejectGuessButton"
+            android:id="@+id/updateGuessButton"
             android:layout_width="wrap_content"
             android:layout_height="40dp"
             android:layout_marginTop="15dp"
@@ -75,7 +75,7 @@
             android:background="@drawable/letter_incorrect_guess_background"
             android:gravity="center"
             android:padding="5dp"
-            android:text="@string/not_in_word"
+            android:text="@string/update_guess"
             android:textColor="#FFF"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/prompt_holder" />

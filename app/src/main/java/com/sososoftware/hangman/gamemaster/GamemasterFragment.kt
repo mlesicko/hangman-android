@@ -1,5 +1,5 @@
 package com.sososoftware.hangman.gamemaster
-import android.content.SharedPreferences
+import android.app.Application
 import android.os.Bundle
 
 import android.view.LayoutInflater
@@ -11,14 +11,9 @@ import android.widget.TextView
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
-import androidx.preference.PreferenceManager
 import com.sososoftware.hangman.R
 import com.sososoftware.hangman.databinding.FragmentHangmanGamemasterBinding
-import com.sososoftware.hangman.getAllWords
 import com.sososoftware.hangman.guess.Guess
-import com.sososoftware.hangman.settings.getAlgorithm
-import kotlinx.coroutines.launch
 
 
 /**
@@ -29,16 +24,6 @@ import kotlinx.coroutines.launch
 class GamemasterFragment : Fragment() {
     private lateinit var binding: FragmentHangmanGamemasterBinding
     private lateinit var viewModel: GamemasterViewModel
-    private lateinit var sharedPreferences: SharedPreferences
-
-    private val onSharedPreferenceChangeListener =
-        SharedPreferences.OnSharedPreferenceChangeListener(
-            fun(preferences: SharedPreferences, key: String) {
-                if (key == "algorithm") {
-                    viewModel.updateAlgorithm(preferences.getAlgorithm())
-                }
-            }
-        )
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -71,31 +56,13 @@ class GamemasterFragment : Fragment() {
             }
             binding.spinnerWordLength.setSelection(DEFAULT_PROMPT_LENGTH - 1)
         }
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
-        val algorithm = sharedPreferences.getAlgorithm()
         val viewModelFactory = GamemasterViewModelFactory(
-            DEFAULT_PROMPT_LENGTH,
-            algorithm
+            requireContext().applicationContext as Application
         )
         viewModel = ViewModelProvider(this, viewModelFactory)
             .get(GamemasterViewModel::class.java)
         viewModel.state.observe(viewLifecycleOwner) { updateDisplay(it) }
-        sharedPreferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
-        getWords()
         return binding.root
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        sharedPreferences.unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
-    }
-
-    private fun getWords() {
-        lifecycleScope.launch {
-            if (viewModel.words.isEmpty()) {
-                viewModel.words = getAllWords(resources)
-            }
-        }
     }
 
     private fun onLetterSelected(state: GamemasterState, currentLetterGuess: Char?, index: Int) {
@@ -122,14 +89,19 @@ class GamemasterFragment : Fragment() {
     }
 
     private fun updateGuess(state: GamemasterState) {
-        binding.guessText.text = state.guess?.let { guess ->
-            when (guess.type) {
-                Guess.GuessType.LETTER_GUESS -> "I guess the letter \"${guess.letter}\"."
-                Guess.GuessType.WORD_GUESS -> "The word is \"${guess.word}\"."
-                Guess.GuessType.GIVE_UP -> "I don't know this word."
-                Guess.GuessType.THINKING -> "Thinking..."
+        binding.guessText.text =
+            if (state.dead) {
+                "Game over. I lose."
+            } else {
+                state.guess?.let { guess ->
+                    when (guess.type) {
+                        Guess.GuessType.LETTER_GUESS -> "I guess the letter \"${guess.letter}\"."
+                        Guess.GuessType.WORD_GUESS -> "The word is \"${guess.word}\"."
+                        Guess.GuessType.GIVE_UP -> "I don't know this word."
+                        Guess.GuessType.THINKING -> "Thinking..."
+                    }
+                } ?: ""
             }
-        } ?: ""
         state.guess?.letter?.let {
             binding.finishGuessButton.isEnabled = true
             binding.finishGuessButton.setOnClickListener {
