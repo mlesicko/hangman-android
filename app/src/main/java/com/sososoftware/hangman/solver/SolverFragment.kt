@@ -6,17 +6,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.TextView
+import android.widget.*
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.sososoftware.hangman.R
 import com.sososoftware.hangman.databinding.FragmentHangmanSolverBinding
-import com.sososoftware.hangman.solver.SolverState
-import com.sososoftware.hangman.solver.SolverViewModel
-import com.sososoftware.hangman.solver.SolverViewModelFactory
 import com.sososoftware.hangman.guess.Guess
 
 
@@ -28,6 +23,7 @@ import com.sososoftware.hangman.guess.Guess
 class SolverFragment : Fragment() {
     private lateinit var binding: FragmentHangmanSolverBinding
     private lateinit var viewModel: SolverViewModel
+    private lateinit var letterHolderAdapter: BaseAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -35,6 +31,11 @@ class SolverFragment : Fragment() {
     ): View {
         binding = DataBindingUtil.inflate(inflater,
             R.layout.fragment_hangman_solver,container,false)
+        val viewModelFactory = SolverViewModelFactory(
+            requireContext().applicationContext as Application
+        )
+        viewModel = ViewModelProvider(this, viewModelFactory)
+            .get(SolverViewModel::class.java)
         binding.resetButton.setOnClickListener { viewModel.resetGame() }
         ArrayAdapter.createFromResource(
             requireContext(),
@@ -60,11 +61,38 @@ class SolverFragment : Fragment() {
             }
             binding.spinnerWordLength.setSelection(DEFAULT_PROMPT_LENGTH - 1)
         }
-        val viewModelFactory = SolverViewModelFactory(
-            requireContext().applicationContext as Application
-        )
-        viewModel = ViewModelProvider(this, viewModelFactory)
-            .get(SolverViewModel::class.java)
+        letterHolderAdapter = object: BaseAdapter() {
+            override fun getCount(): Int = 26
+
+            override fun getItem(position: Int): Char = ('A'..'Z').elementAt(position)
+
+            override fun getItemId(position: Int): Long = position.toLong()
+
+            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val letterView = layoutInflater.inflate(R.layout.view_letter, null) as TextView
+                val c = getItem(position)
+                letterView.text = c.toString()
+                viewModel.state.value?.let {
+                    if (c !in it.guessedLetters) {
+                        letterView.setTextColor(Color.parseColor("black"))
+                        letterView.setBackgroundResource(R.drawable.letter_unguessed_background)
+                        letterView.setOnClickListener { viewModel.onGuess(c) }
+                    } else {
+                        letterView.setTextColor(Color.parseColor("white"))
+                        letterView.setBackgroundResource(
+                            if (c in it.prompt)
+                                R.drawable.letter_correct_guess_background
+                            else
+                                R.drawable.letter_incorrect_guess_background
+                        )
+                        letterView.setOnClickListener { viewModel.onLetterUnselected(c) }
+                    }
+                }
+                return letterView
+            }
+        }
+        binding.letterHolder.adapter = letterHolderAdapter
+
         viewModel.state.observe(viewLifecycleOwner) { updateDisplay(it) }
         return binding.root
     }
@@ -79,7 +107,7 @@ class SolverFragment : Fragment() {
     private fun updateDisplay(state: SolverState) {
         updateGuess(state)
         buildPrompt(state)
-        buildLetters(state)
+        letterHolderAdapter.notifyDataSetChanged()
     }
 
     private fun updateGuess(state: SolverState) {
@@ -110,34 +138,6 @@ class SolverFragment : Fragment() {
             }
             binding.promptHolder.addView(promptLetterView)
         }
-    }
-
-    private fun buildLetters(state: SolverState) {
-        val letters = 'A'..'Z'
-        binding.letterHolder.removeAllViews()
-        letters.forEach { c ->
-            binding.letterHolder.addView(buildLetterView(state, c))
-        }
-    }
-
-    private fun buildLetterView(state: SolverState, c: Char): View {
-        val letterView = layoutInflater.inflate(R.layout.view_letter, null) as TextView
-        letterView.text = c.toString()
-        if (c !in state.guessedLetters){
-            letterView.setTextColor(Color.parseColor("black"))
-            letterView.setBackgroundResource(R.drawable.letter_unguessed_background)
-            letterView.setOnClickListener { viewModel.onGuess(c) }
-        } else {
-            letterView.setTextColor(Color.parseColor("white"))
-            letterView.setBackgroundResource(
-                if (c in state.prompt)
-                    R.drawable.letter_correct_guess_background
-                else
-                    R.drawable.letter_incorrect_guess_background
-            )
-            letterView.setOnClickListener { viewModel.onLetterUnselected(c) }
-        }
-        return letterView
     }
 
     companion object {

@@ -20,19 +20,19 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0.10"/>
 
-        <com.nex3z.flowlayout.FlowLayout
+        <GridView
             android:id="@+id/letter_holder"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
             android:orientation="horizontal"
+            android:numColumns="auto_fit"
+            android:columnWidth="40dp"
+            android:horizontalSpacing="10dp"
+            android:verticalSpacing="10dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/word_holder"
-            app:flChildSpacing="auto"
-            app:flMinChildSpacing="10dp"
-            app:flRowSpacing="10dp"
-            app:flChildSpacingForLastRow="align"
             tools:listitem="@layout/view_letter"/>
 
         <ImageButton

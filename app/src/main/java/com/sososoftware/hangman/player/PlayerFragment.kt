@@ -1,16 +1,16 @@
 package com.sososoftware.hangman.player
 
-import android.content.SharedPreferences
+import android.app.Application
 import android.graphics.Color
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.BaseAdapter
 import android.widget.TextView
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
-import androidx.preference.PreferenceManager
 import com.sososoftware.hangman.*
 import com.sososoftware.hangman.databinding.FragmentHangmanPlayerBinding
 import com.sososoftware.hangman.settings.getWordlist
@@ -23,16 +23,8 @@ import com.sososoftware.hangman.settings.getWordlist
 class PlayerFragment : Fragment() {
     private lateinit var binding: FragmentHangmanPlayerBinding
     private lateinit var viewModel: PlayerViewModel
-    private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var letterHolderAdapter: BaseAdapter
 
-    private val onSharedPreferenceChangeListener =
-        SharedPreferences.OnSharedPreferenceChangeListener(
-            fun(preferences: SharedPreferences, key: String) {
-                if (key == "wordlist") {
-                    viewModel.updateWords(getWords(preferences.getWordlist()))
-                }
-            }
-        )
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -41,32 +33,51 @@ class PlayerFragment : Fragment() {
         binding = DataBindingUtil.inflate(inflater,
             R.layout.fragment_hangman_player,container,false)
         binding.resetButton.setOnClickListener { viewModel.resetGame() }
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
-        val wordlist = sharedPreferences.getWordlist()
-        val viewModelFactory = PlayerViewModelFactory(getWords(wordlist))
+        val viewModelFactory = PlayerViewModelFactory(
+            requireContext().applicationContext as Application
+        )
         viewModel = ViewModelProvider(this, viewModelFactory)
             .get(PlayerViewModel::class.java)
         viewModel.state.observe(viewLifecycleOwner) { updateDisplay(it) }
-        sharedPreferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
+
+        letterHolderAdapter = object: BaseAdapter() {
+            override fun getCount(): Int = 26
+
+            override fun getItem(position: Int): Char = ('A'..'Z').elementAt(position)
+
+            override fun getItemId(position: Int): Long = position.toLong()
+
+            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val letterView = layoutInflater.inflate(R.layout.view_letter, null) as TextView
+                val c = getItem(position)
+                letterView.text = c.toString()
+                viewModel.state.value?.let {
+                    if (it.wasGuessed(c)){
+                        letterView.setTextColor(Color.parseColor("white"))
+                        letterView.setBackgroundResource(
+                            if (it.inWord(c))
+                                R.drawable.letter_correct_guess_background
+                            else
+                                R.drawable.letter_incorrect_guess_background
+                        )
+                    } else {
+                        letterView.setTextColor(Color.parseColor("black"))
+                        letterView.setBackgroundResource(R.drawable.letter_unguessed_background)
+                        letterView.setOnClickListener { viewModel.onGuess(c) }
+                    }
+                }
+                return letterView
+            }
+        }
+        binding.letterHolder.adapter = letterHolderAdapter
+
         return binding.root
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        sharedPreferences.unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
-    }
-
-    private fun getWords(wordlist: String): Collection<String> = when (wordlist) {
-        "easy" -> getEasyPlayerWords(resources)
-        "hard" -> getHardPlayerWords(resources)
-        "both" -> getBothPlayerWords(resources)
-        else -> listOf()
     }
 
     private fun updateDisplay(state: PlayerState) {
         updatePrompt(state)
         updateGallows(state)
-        buildLetters(state)
+        letterHolderAdapter.notifyDataSetChanged()
     }
 
     private fun updatePrompt(state: PlayerState) {

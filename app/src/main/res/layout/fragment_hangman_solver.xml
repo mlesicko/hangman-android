@@ -24,19 +24,20 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/spinner_word_length_label" />
 
-        <com.nex3z.flowlayout.FlowLayout
+        <GridView
             android:id="@+id/letter_holder"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
             android:orientation="horizontal"
-            app:flChildSpacing="auto"
-            app:flChildSpacingForLastRow="align"
-            app:flMinChildSpacing="10dp"
-            app:flRowSpacing="10dp"
+            android:numColumns="auto_fit"
+            android:columnWidth="40dp"
+            android:horizontalSpacing="10dp"
+            android:verticalSpacing="10dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/updateGuessButton" />
+            app:layout_constraintTop_toBottomOf="@+id/updateGuessButton"
+            tools:listitem="@layout/view_letter"/>
 
         <ImageButton
             android:id="@+id/reset_button"
