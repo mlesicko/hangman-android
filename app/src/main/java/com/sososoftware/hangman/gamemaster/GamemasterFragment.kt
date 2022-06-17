@@ -93,19 +93,17 @@ class GamemasterFragment : Fragment() {
             if (state.dead) {
                 "Game over. I lose."
             } else {
-                state.guess?.let { guess ->
-                    when (guess.type) {
-                        Guess.GuessType.LETTER_GUESS -> "I guess the letter \"${guess.letter}\"."
-                        Guess.GuessType.WORD_GUESS -> "The word is \"${guess.word}\"."
-                        Guess.GuessType.GIVE_UP -> "I don't know this word."
-                        Guess.GuessType.THINKING -> "Thinking..."
-                    }
-                } ?: ""
+                when (state.guess.type) {
+                    Guess.GuessType.LETTER_GUESS -> "I guess the letter \"${state.guess.letter}\"."
+                    Guess.GuessType.WORD_GUESS -> "The word is \"${state.guess.word}\"."
+                    Guess.GuessType.GIVE_UP -> "I don't know this word."
+                    Guess.GuessType.THINKING -> "Thinking..."
+                }
             }
-        state.guess?.letter?.let {
+        state.guess.letter?.let {
             binding.finishGuessButton.isEnabled = true
             binding.finishGuessButton.setOnClickListener {
-                state.guess?.letter?.let { letter -> viewModel.onGuess(letter) }
+                state.guess.letter?.let { letter -> viewModel.onGuess(letter) }
             }
             binding.finishGuessButton.visibility = View.VISIBLE
             if (it in state.prompt) {
@@ -129,10 +127,8 @@ class GamemasterFragment : Fragment() {
             val promptLetterView = layoutInflater.inflate(R.layout.view_prompt_letter, null) as TextView
             promptLetterView.text = promptLetter?.toString() ?: "_"
             promptLetterView.setOnClickListener {
-                state.guess?.let {
-                    if (it.type == Guess.GuessType.LETTER_GUESS) {
-                        onLetterSelected(state, it.letter, index)
-                    }
+                if (state.guess.type == Guess.GuessType.LETTER_GUESS) {
+                    onLetterSelected(state, state.guess.letter, index)
                 }
             }
             binding.promptHolder.addView(promptLetterView)

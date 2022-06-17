@@ -5,11 +5,11 @@ import com.sososoftware.hangman.guess.Guess
 data class GamemasterState (
     var prompt: List<Char?>,
     var guessedLetters: Set<Char> = emptySet(),
-    var guess: Guess? = null
+    var guess: Guess = Guess.thinking()
 ) {
     constructor(promptLength: Int) : this(arrayOfNulls<Char?>(promptLength).toList())
 
-    fun withGuess(guess: Guess?) = GamemasterState(prompt, guessedLetters, guess)
+    fun withGuess(guess: Guess) = GamemasterState(prompt, guessedLetters, guess)
 
     fun updatePrompt(newPrompt: List<Char?>) =
         GamemasterState(

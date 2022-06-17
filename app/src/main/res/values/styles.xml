@@ -23,8 +23,4 @@
         <item name="android:layout_width">300dp</item>
         <item name="android:layout_height">300dp</item>
     </style>
-
-    <style name="Gallows">
-        <item name="android:visibility">visible</item>
-    </style>
 </resources>

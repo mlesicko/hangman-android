@@ -22,10 +22,10 @@ data class Guess(val letter: Char?, val word: String?, val type: GuessType) {
             guessedLetters: Set<Char>,
             prompt: List<Char?>,
             algorithm: String
-        ): Guess? =
+        ): Guess =
             withContext(Dispatchers.Default) {
                 when {
-                    wordlist == null || wordlist.isEmpty() -> null
+                    wordlist == null || wordlist.isEmpty() -> thinking()
                     prompt.isFinishedPrompt() -> guessWord(prompt.joinToString(""))
                     else -> {
                         val wrongLetters = guessedLetters - prompt.filterNotNull().toSet()

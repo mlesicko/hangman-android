@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        tools:context=".TitleFragment">
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="serif"
+            android:text="@string/title"
+            android:textAllCaps="true"
+            android:textColor="@android:color/black"
+            android:textSize="40sp"
+            app:layout_constraintBottom_toTopOf="@+id/gallows"
+            app:layout_constraintEnd_toEndOf="@+id/gallows"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="@+id/gallows"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="spread" />
+
+        <ImageView
+            android:id="@+id/gallows"
+            style="@style/TitleGallows"
+            android:contentDescription="@null"
+            android:src="@drawable/gallows_0"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/barrier2"
+            app:layout_constraintHorizontal_bias="0.25"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/title" />
+
+        <Button
+            android:id="@+id/hangman_player_button"
+            android:layout_width="175dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/letter_unguessed_background"
+            android:padding="10dp"
+            android:text="@string/you_guess"
+            app:layout_constraintBottom_toTopOf="@+id/hangman_gamemaster_button"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/gallows"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/hangman_gamemaster_button"
+            android:layout_width="175dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/letter_unguessed_background"
+            android:padding="10dp"
+            android:text="@string/computer_guesses"
+            app:layout_constraintBottom_toTopOf="@+id/hangman_solver_button"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/gallows"
+            app:layout_constraintTop_toBottomOf="@+id/hangman_player_button" />
+
+        <Button
+            android:id="@+id/hangman_solver_button"
+            android:layout_width="175dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/letter_unguessed_background"
+            android:padding="10dp"
+            android:text="@string/solver"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/gallows"
+            app:layout_constraintTop_toBottomOf="@+id/hangman_gamemaster_button" />
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/barrier2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="left"
+            app:constraint_referenced_ids="hangman_player_button,hangman_gamemaster_button,hangman_solver_button"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/gallows" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

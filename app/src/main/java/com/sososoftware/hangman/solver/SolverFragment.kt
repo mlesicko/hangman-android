@@ -111,16 +111,14 @@ class SolverFragment : Fragment() {
     }
 
     private fun updateGuess(state: SolverState) {
-        binding.guessText.text = state.guess?.let { guess ->
-            when (guess.type) {
-                Guess.GuessType.LETTER_GUESS -> "I guess the letter \"${guess.letter}\"."
-                Guess.GuessType.WORD_GUESS -> "The word is \"${guess.word}\"."
-                Guess.GuessType.GIVE_UP -> "I don't know this word."
-                Guess.GuessType.THINKING -> "Thinking..."
-            }
-        } ?: ""
+        binding.guessText.text = when (state.guess.type) {
+            Guess.GuessType.LETTER_GUESS -> "I guess the letter \"${state.guess.letter}\"."
+            Guess.GuessType.WORD_GUESS -> "The word is \"${state.guess.word}\"."
+            Guess.GuessType.GIVE_UP -> "I don't know this word."
+            Guess.GuessType.THINKING -> "Thinking..."
+        }
         binding.updateGuessButton.setOnClickListener {
-            state.guess?.letter?.let { viewModel.updateGuess() }
+            state.guess.letter?.let { viewModel.updateGuess() }
         }
     }
 
